@@ -1,0 +1,6 @@
+#song-viewer-main {
+    height: 60px;
+    margin: 2px 15px 0px 15px;
+    border-radius: 4px;
+    background-color: #121212; /* Matches dark theme background */
+}

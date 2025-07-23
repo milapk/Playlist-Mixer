@@ -1,0 +1,132 @@
+#playlist-root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: #FFFFFF; 
+}
+
+#playlist-top {
+    height: 85%;
+    background-color: #000000;
+    margin: 20px 50px 0 50px;
+    border-radius: 4px;
+    overflow-y: hidden;
+    padding-bottom: 10px;
+}
+.simplebar-track.simplebar-vertical .simplebar-scrollbar:before {
+    background-color:#c0b3b3
+}
+
+#playlist-bottom {
+    height: 15%;
+    display: flex;
+    flex-direction: row;
+    margin: 0 50px 0 50px;
+}
+
+#playlist-yt-player{
+    width: 25%;
+    height: 100%;
+}
+
+#playlist-blocker {
+    position: fixed;
+    cursor: 'not-allowed';
+    width: 200px;
+    height: 100%;
+}
+
+#playlist-controller {
+    height: 100%;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#playlist-controller-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 25%;
+} 
+#playlist-song-table {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    margin-left: 15px;
+}
+#playlist-table-header {
+    display: grid;
+    grid-template-columns: 5% 30% 30% 25% 10%;
+    font-weight: bold;
+    color: #B3B3B3; /* Light gray text */
+    padding: 10px 0;
+    border-bottom: 1px solid #333;
+    padding-left: 5px;
+
+}
+
+.playlist-table-row {
+    display: grid;
+    grid-template-columns: 5% 30% 30% 25% 10%;
+    padding: 10px 0;
+    border-bottom: 1px solid #333;
+    color: #FFFFFF; 
+    padding-left: 5px;
+
+}
+
+.playlist-table-row:hover {
+    background-color: #282828; /* Slightly lighter background on hover */
+    background-color: #389c4f; /* Slightly lighter background on hover */
+
+}
+
+#playlist-suggest-div {
+    height: 100%;
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#playlist-progess-bar{
+    width: 60%;
+}
+
+#playlist-description{
+    font-size: 13px;
+    margin: 0 15px 2px 15px;
+    color: #B3B3B3;
+}
+
+#playlist-title {
+    font-size: 40px;
+    margin-bottom: 5px;
+    position: sticky;
+    top: 0;
+    color: #1DB954;
+    font-weight: bold;
+    background-color: rgb(37, 35, 35);
+    background-color: #000000; /* Matches dark theme background */
+    padding-bottom: 8px;
+    margin-left: 15px;
+}
+
+#playlist-suggest-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    height: 100%;
+}
+
+#suggest-button {
+    width: 10%;
+    height: 60%;
+}

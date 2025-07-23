@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: django-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: daphne backend.asgi:application
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: backend.settings
+      - key: SECRET_KEY
+        value: your-secret-key-here
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: redis-server
+          property: connectionString
+
+  - type: redis
+    name: redis-server
+    ipAllowList: []

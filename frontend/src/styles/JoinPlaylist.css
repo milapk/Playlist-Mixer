@@ -1,0 +1,25 @@
+#join-root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+#join-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 100px;
+}
+
+#join-text-field {
+    margin-top: 10px;
+    width: 220px;
+}
+
+#join-button {
+    margin-top: 10px;
+    width: 220px;
+}

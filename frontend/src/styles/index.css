@@ -1,0 +1,14 @@
+#root {
+    height: 100vh;
+    background-color: rgb(0, 0, 0);
+    font-family: 'Inter', sans-serif;
+    color: #d8d0d0;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden /* prevent scrollbars */
+  }
+

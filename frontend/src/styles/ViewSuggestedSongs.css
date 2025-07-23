@@ -1,0 +1,56 @@
+.suggested-songs-container {
+    padding: 20px;
+    background-color: #121212; /* Matches dark theme background */
+    min-height: 100vh;
+}
+
+.page-title {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #1DB954; /* Spotify green */
+    font-weight: bold;
+}
+
+.song-card {
+    background-color: #181818; /* Dark card background */
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.song-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.7);
+}
+
+.song-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #FFFFFF; /* White text */
+}
+
+.song-artist,
+.song-duration {
+    color: #B3B3B3; /* Light gray text */
+    margin-bottom: 10px;
+}
+
+.vote-button {
+    margin-top: 15px;
+    background-color: #1DB954; /* Spotify green */
+    color: #FFFFFF; /* White text */
+    text-transform: none;
+    font-weight: bold;
+    border-radius: 20px;
+    padding: 8px 16px;
+}
+
+.vote-button:hover {
+    background-color: #1AA34A; /* Slightly darker green */
+}
+
+.no-songs-message {
+    text-align: center;
+    color: #B3B3B3; /* Light gray text */
+    margin-top: 20px;
+}

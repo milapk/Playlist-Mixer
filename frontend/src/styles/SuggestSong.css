@@ -1,0 +1,33 @@
+#suggest-root {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+#suggest-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 100px;
+}
+
+#suggest-text-field-song {
+    margin-top: 10px;
+    width: 220px;
+}
+
+#suggest-text-field-artist {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    width: 220px;
+}
+
+
+#suggest-button {
+    margin-top: 10px;
+    width: 220px;
+}
+

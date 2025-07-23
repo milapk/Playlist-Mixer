@@ -1,0 +1,27 @@
+#home-root {
+    width: 100%;
+    height: 100%;
+    display: flex;  
+    flex-direction: column;
+    align-items: center;
+
+}
+
+#home-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 100px;
+    height: 100%;
+}
+
+
+#button {
+    margin-bottom: 20px;
+    width: 170px;
+}
+
+#button-logout{
+    margin: 20px 0 0 0;
+    width: 100px;
+}
