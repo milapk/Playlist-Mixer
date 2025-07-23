@@ -30,7 +30,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = [
-    "playlist-mixer-back-end.onrender.com",
+    "playlist-mixer-43h3.onrender.com",
     "127.0.0.1",
 ]
 
@@ -68,7 +68,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ] ##All API Views are set to Authenticated
+    ]
 }
 
 MIDDLEWARE = [

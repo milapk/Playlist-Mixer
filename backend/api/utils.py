@@ -2,6 +2,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import random, string
 import requests
 import re
+from pathlib import Path
+import environ
+import os
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env(
+    DEBUG=(bool, False)
+)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 CODE_LENGTH = 8
 
@@ -17,7 +26,7 @@ def generate_playlist_code():
 
 def get_video_details(song_name, artist_name):
     query = song_name + ' by ' + artist_name + ' official'
-    api_key = 'AIzaSyAonBdMJl0jJKrnAcrAhxKJTWpCuLoC2k0'  #------------------DO NOT USE THIS IN PRODUCTION------------------
+    api_key = env('YT_API_KEY')
     url = f'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&q={query}&key={api_key}'
     response = requests.get(url)
     data = response.json()
