@@ -82,8 +82,8 @@
 }
 
 .playlist-table-row:hover {
-    background-color: #282828; /* Slightly lighter background on hover */
-    background-color: #389c4f; /* Slightly lighter background on hover */
+    background-color: #282828;
+    background-color: #389c4f;
 
 }
 
@@ -113,7 +113,7 @@
     color: #1DB954;
     font-weight: bold;
     background-color: rgb(37, 35, 35);
-    background-color: #000000; /* Matches dark theme background */
+    background-color: #000000;
     padding-bottom: 8px;
     margin-left: 15px;
 }

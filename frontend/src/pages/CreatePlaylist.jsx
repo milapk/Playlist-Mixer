@@ -21,7 +21,7 @@ function CreatePlaylist() {
         });
         if (response.status === 201) {
             localStorage.setItem("playlist_code", response.data.playlist_code);
-
+            localStorage.setItem('host', 'true');
             navigate(`/playlist/${localStorage.getItem("playlist_code")}/`);
         } else {
             console.error(response.detail);
@@ -56,7 +56,7 @@ function CreatePlaylist() {
                     size="medium"
                     onClick={handleCreatePlaylist}
                 >
-                    Join Playlist
+                    Create Playlist
                 </Button>
                 <Button
                     id="create-button"

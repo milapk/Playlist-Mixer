@@ -18,6 +18,7 @@ function Playlist() {
     const [songDuration, setSongDuration] = useState(100);
     const [playstate, setPlayState] = useState("PLAY");
     const [songs, setSongs] = useState([]);
+    const [host, setHost] = useState(false);
     const navigate = useNavigate();
     const socketRef = useRef(null);
     const playerRef = useRef(null); // Ref for the YouTube player instance
@@ -42,6 +43,12 @@ function Playlist() {
         getSongs();
 
         const code = localStorage.getItem("playlist_code");
+        if (localStorage.getItem('host') === 'true'){
+            setHost(true);
+        } else {
+            setHost(false)
+        }
+
         const access = localStorage.getItem(ACCESS_TOKEN);
         const socket = new WebSocket(
             `${import.meta.env.VITE_WS_URL}/ws/playlist/${code}/${access}/`
@@ -257,6 +264,7 @@ function Playlist() {
                         <IconButton
                             color="primary"
                             onClick={handlePreviousSong}
+                            disabled={host === false}
                         >
                             <SkipPreviousIcon />
                         </IconButton>
@@ -264,6 +272,7 @@ function Playlist() {
                             <IconButton
                                 color="primary"
                                 onClick={handlePauseSong}
+                                disabled={host === false}
                             >
                                 <PauseIcon />
                             </IconButton>
@@ -271,11 +280,12 @@ function Playlist() {
                             <IconButton
                                 color="primary"
                                 onClick={handlePlaySong}
+                                disabled={host === false}
                             >
                                 <PlayArrowIcon />
                             </IconButton>
                         )}
-                        <IconButton color="primary" onClick={handleNextSong}>
+                        <IconButton color="primary" onClick={handleNextSong} disabled={host === false}>
                             <SkipNextIcon />
                         </IconButton>
                     </div>
@@ -287,6 +297,7 @@ function Playlist() {
                             value={songProgress}
                             max={songDuration}
                             onChange={handleSongDurationChange}
+                            disabled={host === false}
                         />
                     </div>
                 </div>

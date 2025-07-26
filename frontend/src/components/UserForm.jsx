@@ -27,7 +27,6 @@ function UserForm({ type }) {
         if (response.status === 200) {
             localStorage.setItem(ACCESS_TOKEN, response.data.access);
             localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
-            console.log(response.data);
             navigate("/");
         } else {
             console.log(response.data.detail);

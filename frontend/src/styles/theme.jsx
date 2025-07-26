@@ -4,10 +4,10 @@ const theme = createTheme({
     palette: {
         mode: "dark",
         primary: {
-            main: "#1DB954", // Spotify green
+            main: "#1DB954",
         },
         secondary: {
-            main: "#00BFA6", // Pink for secondary actions
+            main: "#00BFA6",
         },
         background: {
             default: "#121212",

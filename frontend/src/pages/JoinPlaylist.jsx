@@ -17,6 +17,8 @@ function JoinPlaylist() {
         const response = await api.post("/api/join-room/", { code });
         if (response.status === 200) {
             localStorage.setItem('playlist_code', response.data.playlist_code);
+            localStorage.setItem('host', 'false');
+            
             navigate(
                 `/playlist/${localStorage.getItem("playlist_code")}/`
             );
