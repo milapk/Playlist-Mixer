@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import PlaylistModel, SongModel
+from .models import PlaylistModel, SongModel, UserVotesModel
 from .utils import generate_playlist_code
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -18,12 +18,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 class PlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaylistModel
-        fields = ('host', 'playlist_code', 'votes_to_add_song', 'current_song', 'song_timestamp')
+        fields = ('host', 'playlist_code', 'votes_to_add_song')
         extra_kwargs = {
             'host' : {'read_only': True},
             'playlist_code': {'read_only': True},
-            'current_song': {'read_only': True},
-            'song_timestamp': {'read_only': True},
         }
 
     def create(self, validated_data):
@@ -39,7 +37,7 @@ class PlaylistSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     class Meta:
         model = SongModel
-        fields = ['song_id', 'playlist', 'song_name', 'song_artist', 'song_duration', 'votes', 'voted_in_playlist']
+        fields = ['song_id', 'playlist', 'song_name', 'song_artist', 'song_duration', 'song_added', 'votes', 'voted_in_playlist']
         extra_kwargs = {
             'playlist': {'read_only': True},
             'votes': {'read_only': True},
@@ -49,4 +47,17 @@ class SongSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['playlist'] = self.context['playlist']
         return SongModel.objects.create(**validated_data)
+
+class UserVotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserVotesModel
+        fields = ['playlist', 'user', 'song_id']
+        extra_kwargs = {
+            'playlist': {'read_only': True},
+            'user' : {'read_only': True},
+        }
     
+    def create(self, validated_data):
+        validated_data['user'] = self.context['request'].user
+        validated_data['playlist'] = self.context['playlist']
+        return super().create(validated_data)

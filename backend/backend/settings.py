@@ -45,7 +45,6 @@ CHANNEL_LAYERS = {
 }
 
 
-# Application definition
 
 INSTALLED_APPS = [
     'daphne',
@@ -86,7 +85,7 @@ ROOT_URLCONF = 'backend.urls'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    'https://playlist-mixers.vercel.app/',
+    'https://playlist-mixers.vercel.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True

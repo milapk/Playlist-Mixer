@@ -8,7 +8,6 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('create-room/', CreateRoomView.as_view(), name='create_room'),
     path('join-room/', JoinRoomView.as_view(), name='join_room'),
-    path('get-video-id/', GetVideoId.as_view(), name='get_video_id'),
     path('suggest-song/', SuggestSong.as_view(), name='suggest_song'),
     path('vote-song/', VoteSong.as_view(), name='vote_song'),
     path('get-suggested-songs/', GetSuggestedSongs.as_view(), name='get_suggested_songs'),

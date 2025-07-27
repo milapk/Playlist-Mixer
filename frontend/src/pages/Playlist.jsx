@@ -19,9 +19,11 @@ function Playlist() {
     const [playstate, setPlayState] = useState("PLAY");
     const [songs, setSongs] = useState([]);
     const [host, setHost] = useState(false);
+    const [hostUsername, setHostUsername] = useState('');
+    const [numOfSongs, setNumOfSongs] = useState(0);
     const navigate = useNavigate();
     const socketRef = useRef(null);
-    const playerRef = useRef(null); // Ref for the YouTube player instance
+    const playerRef = useRef(null); 
 
     useEffect(() => {
         const getSongs = async () => {
@@ -31,10 +33,19 @@ function Playlist() {
                         playlist_code: localStorage.getItem("playlist_code"),
                     },
                 });
-                if (response.status === 200 && response.data.songs.length > 0) {
-                    setSongs([...response.data.songs]);
+                if (response.status === 200) {
+                    if (response.data.songs.length > 0){
+                        setSongs([...response.data.songs]);
+                        setNumOfSongs(response.data.songs.length);
+                    } else {
+                        setNumOfSongs(0);
+                        setSongs([])
+                    }
+                    setHostUsername(response.data.host)
                 } else {
                     setSongs([]);
+                    setNumOfSongs(0);
+                    setHostUsername(' ')
                 }
             } catch (error) {
                 setSongs([]);
@@ -56,13 +67,14 @@ function Playlist() {
         socketRef.current = socket;
 
         socket.onopen = () => {
-            console.log("WebSocket connected ✅");
+            console.log("WebSocket connected");
         };
 
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.event === "playlist_songs") {
                 setSongs([...data.songs]);
+                setNumOfSongs(numOfSongs+1)
             } else if (data.event === "next") {
                 setVideoId(data.song_id);
                 setSongProgess(0);
@@ -70,7 +82,7 @@ function Playlist() {
                     playerRef.current.playVideo();
                 }
             } else if (data.event === "previous") {
-
+                setVideoId(data.song_id);
                 setSongProgess(0);
                 if (playerRef.current) {
                     playerRef.current.playVideo();
@@ -95,7 +107,7 @@ function Playlist() {
         };
 
         socket.onclose = () => {
-            console.log("WebSocket disconnected ❌");
+            console.log("WebSocket disconnected");
         };
 
         return () => {
@@ -104,7 +116,6 @@ function Playlist() {
     }, []);
 
     useEffect(() => {
-        console.log(songDuration)
         let interval = null;
 
         if (playstate === "PLAY" && playerRef.current) {
@@ -197,7 +208,6 @@ function Playlist() {
         console.log('Player State Changed: ' + status);
 
         if (status === 0) {
-            // Video ended, move to the next song
             handleNextSong();
         } if (status === 5) {
             playerRef.current.playVideo()
@@ -209,8 +219,8 @@ function Playlist() {
             <div id="playlist-top">
                 <SimpleBar style={{ maxHeight: "100%" }}>
                     <h1 id="playlist-title">Playlist Name</h1>
-                    <div id="playlist-description">Creator: Milap</div>
-                    <div id="playlist-description">12 songs</div>
+                    <div id="playlist-description">Creator: {hostUsername}</div>
+                    <div id="playlist-description">{numOfSongs} songs</div>
                     <div id="playlist-song-table">
                         <div id="playlist-table-header">
                             <div>#</div>
@@ -224,7 +234,7 @@ function Playlist() {
                                 <div>{index + 1}</div>
                                 <div>{song.song_name}</div>
                                 <div>{song.song_artist}</div>
-                                <div>11 Jan 24</div>
+                                <div>{song.song_added}</div>
                                 <div>
                                     {Math.floor(song.song_duration / 60)}:
                                     {String(song.song_duration % 60).padStart(

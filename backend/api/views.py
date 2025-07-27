@@ -10,7 +10,6 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 
-# Create your views here.
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     def post(self, request, format=None):
@@ -43,22 +42,6 @@ class JoinRoomView(APIView):
             return Response({'error': 'Invalid playlist code'}, status=status.HTTP_404_NOT_FOUND)
         return Response({'error': 'Expected "playlist_code" in request'}, status=status.HTTP_400_BAD_REQUEST)
     
-class GetVideoId(APIView):
-    permission_classes = [AllowAny]
-    def post(self, request, format=None):
-        query = request.data.get('query')
-        if query:
-            api_key = 'AIzaSyAonBdMJl0jJKrnAcrAhxKJTWpCuLoC2k0'  #------------------DO NOT USE THIS IN PRODUCTION------------------
-            url = f'https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=1&type=video&q={query}&key={api_key}'
-            response = requests.get(url)
-            if response.status_code == 200:
-                data = response.json()
-                return Response({'videoId': data['items'][0]['id']['videoId']}, status=status.HTTP_200_OK)
-            error_data = response.json()  # Extract error message from the failed response
-            return Response({'error': error_data.get('error', {}).get('message', 'YouTube fetch failed')},
-                    status=status.HTTP_404_NOT_FOUND)
-        return Response({'error': 'Expected "query" in request'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class SuggestSong(APIView):
     permission_classes = [IsAuthenticated]
@@ -89,7 +72,6 @@ class SuggestSong(APIView):
         if count > 0:
             return Response({'error': 'Song is already in playlist or is suggested'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(duration)
         request.data['song_duration'] = duration
         request.data['song_id'] = song_id
         serializer = SongSerializer(data=request.data, context={'playlist': playlist})
@@ -114,7 +96,10 @@ class VoteSong(APIView):
         if not song:
             return Response({'error': 'This song has not been suggested'}, status=status.HTTP_404_NOT_FOUND)
         
+        if UserVotesModel.objects.filter(user=request.user, playlist=playlist, song_id=song_id).exists():
+            return Response({'error': 'You have already voted for song'}, status=status.HTTP_401_UNAUTHORIZED)
         
+        UserVotesModel.objects.create(user=request.user, playlist=playlist, song_id=song_id)
         song.votes += 1
         if song.votes >= playlist.votes_to_add_song:
             song.voted_in_playlist = True
@@ -138,9 +123,10 @@ class GetSuggestedSongs(APIView):
         if not playlist:
             return Response({'error': 'Invalid playlist code'}, status=status.HTTP_404_NOT_FOUND)
 
-        songs = SongModel.objects.filter(playlist=playlist, voted_in_playlist=False)
-        if songs.exists():
-            serializer = SongSerializer(songs, many=True)
+        voted_ids = UserVotesModel.objects.filter(user=request.user, playlist=playlist).values_list('song_id', flat=True)
+        unvoted_songs = SongModel.objects.filter(playlist=playlist, voted_in_playlist=False).exclude(song_id__in=voted_ids)
+        if unvoted_songs.exists():
+            serializer = SongSerializer(unvoted_songs, many=True)
             return Response({'songs': serializer.data}, status=status.HTTP_200_OK)
         return Response({'songs': {}}, status=status.HTTP_200_OK)
 
@@ -156,8 +142,9 @@ class GetSongsInPlaylist(APIView):
             return Response({'error': 'Invalid playlist code'}, status=status.HTTP_404_NOT_FOUND)
 
         songs = SongModel.objects.filter(playlist=playlist, voted_in_playlist=True)
+        username = playlist.host.get_username()
         if songs.exists():
             serializer = SongSerializer(songs, many=True)
-            return Response({'songs': serializer.data}, status=status.HTTP_200_OK)
-        return Response({'songs': {}}, status=status.HTTP_200_OK)
+            return Response({'songs': serializer.data, 'host': str(username)}, status=status.HTTP_200_OK)
+        return Response({'songs': {}, 'host': str(username)}, status=status.HTTP_200_OK)
 
