@@ -48,6 +48,9 @@ class PlaylistConsumer(AsyncWebsocketConsumer):
                     await self.channel_layer.group_send(self.room_group_name, {'type': str(data.get('event')), 'song_id': self.song_queue[self.song_queue_index]})
                 else:
                     await self.channel_layer.group_send(self.room_group_name, {'type': str(data.get('event')), 'error': 'No previous songs'})
+            elif data.get('event') == 'playlist_sync':
+                await self.channel_layer.group_send(self.room_group_name, {'type': str(data.get('event')), 'timestamp': data.get('timestamp'), 'song_id': data.get('song_id')})
+
             else:
                 await self.channel_layer.group_send(self.room_group_name, {'type': str(data.get('event')), 'timestamp': data.get('timestamp')})
 
@@ -57,6 +60,7 @@ class PlaylistConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({'event': 'next', 'error': event['error']}))
         else:
             await self.send(text_data=json.dumps({'event': 'next', 'song_id': event['song_id']}))
+
     async def playlist_previous_song(self, event):
         if event.get('error'):
             await self.send(text_data=json.dumps({'event': 'next', 'error': event['error']}))
@@ -64,15 +68,14 @@ class PlaylistConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({'event': 'next', 'song_id': event['song_id']}))
 
     async def playlist_sync(self, event):
-        await self.send(text_data=json.dumps({'event': 'sync', 'timestamp': event['timestamp']}))
+        await self.send(text_data=json.dumps({'event': 'sync', 'timestamp': event['timestamp'], 'song_id': event['song_id']}))
 
     async def playlist_play(self, event):
         await self.send(text_data=json.dumps({'event': 'play', 'timestamp': event['timestamp']}))
+
     async def playlist_pause(self, event):
         await self.send(text_data=json.dumps({'event': 'pause', 'timestamp': event['timestamp']}))
-
   
-    
     async def broadcast_playlist_songs(self, event):
         songs = await get_playlist_songs(event['code'])
         await self.send(text_data=json.dumps({'event': 'playlist_songs', 'songs': songs}))

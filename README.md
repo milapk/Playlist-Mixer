@@ -6,11 +6,11 @@ Built using React and Django, with WebSockets and Redis to support real-time fea
 
 
 ## Deployment
-Deployed via Vercel(Front-end) and Render(Back-end)
+Frontend deployed in vercel and Backend hosted on Render.
 
 [**Try out Playlist Mixer here**](https://playlist-mixers.vercel.app/)
 
-*Note: Backend deployed on a render free plan and will likely take a few minutes to spin-up, so pleae do wait when logging in or regitering.
+*Note: Backend deployed on a render free plan and will likely take a few minutes to spin-up, so please do wait when logging in or registering.
 
 ## Features
 

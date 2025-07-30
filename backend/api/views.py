@@ -143,8 +143,9 @@ class GetSongsInPlaylist(APIView):
 
         songs = SongModel.objects.filter(playlist=playlist, voted_in_playlist=True)
         username = playlist.host.get_username()
+        host = playlist.host == request.user
         if songs.exists():
             serializer = SongSerializer(songs, many=True)
-            return Response({'songs': serializer.data, 'host': str(username)}, status=status.HTTP_200_OK)
-        return Response({'songs': {}, 'host': str(username)}, status=status.HTTP_200_OK)
+            return Response({'songs': serializer.data, 'username': str(username), 'host': str(host), 'playlist_name': playlist.playlist_name}, status=status.HTTP_200_OK)
+        return Response({'songs': {}, 'username': str(username), 'host': str(host), 'playlist_name': playlist.playlist_name}, status=status.HTTP_200_OK)
 

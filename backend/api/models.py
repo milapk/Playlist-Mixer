@@ -5,6 +5,7 @@ class PlaylistModel(models.Model):
     host = models.OneToOneField(User, on_delete=models.CASCADE)
     playlist_code = models.CharField(max_length=8, unique=True, editable=False)
     votes_to_add_song = models.IntegerField(default=2)
+    playlist_name = models.CharField(null=False)
 
 class SongModel(models.Model):
     song_id = models.CharField(unique=False)

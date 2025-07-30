@@ -18,7 +18,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class PlaylistSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaylistModel
-        fields = ('host', 'playlist_code', 'votes_to_add_song')
+        fields = ('host', 'playlist_code', 'votes_to_add_song', 'playlist_name')
         extra_kwargs = {
             'host' : {'read_only': True},
             'playlist_code': {'read_only': True},

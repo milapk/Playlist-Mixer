@@ -17,13 +17,14 @@ function Playlist() {
     const [videoId, setVideoId] = useState("");
     const [songDuration, setSongDuration] = useState(100);
     const [playstate, setPlayState] = useState("PLAY");
+    const [playlistName, setPlaylistName] = useState("");
     const [songs, setSongs] = useState([]);
     const [host, setHost] = useState(false);
-    const [hostUsername, setHostUsername] = useState('');
+    const [hostUsername, setHostUsername] = useState("");
     const [numOfSongs, setNumOfSongs] = useState(0);
     const navigate = useNavigate();
     const socketRef = useRef(null);
-    const playerRef = useRef(null); 
+    const playerRef = useRef(null);
 
     useEffect(() => {
         const getSongs = async () => {
@@ -34,18 +35,25 @@ function Playlist() {
                     },
                 });
                 if (response.status === 200) {
-                    if (response.data.songs.length > 0){
+                    if (response.data.songs.length > 0) {
                         setSongs([...response.data.songs]);
                         setNumOfSongs(response.data.songs.length);
                     } else {
                         setNumOfSongs(0);
-                        setSongs([])
+                        setSongs([]);
                     }
-                    setHostUsername(response.data.host)
+                    if (response.data.host === "True") {
+                        setHost(true);
+                    } else {
+                        setHost(false);
+                    }
+                    setPlaylistName(response.data.playlist_name)
+                    setHostUsername(response.data.username);
                 } else {
                     setSongs([]);
                     setNumOfSongs(0);
-                    setHostUsername(' ')
+                    setHostUsername(" ");
+                    setPlaylistName(" ");
                 }
             } catch (error) {
                 setSongs([]);
@@ -54,12 +62,6 @@ function Playlist() {
         getSongs();
 
         const code = localStorage.getItem("playlist_code");
-        if (localStorage.getItem('host') === 'true'){
-            setHost(true);
-        } else {
-            setHost(false)
-        }
-
         const access = localStorage.getItem(ACCESS_TOKEN);
         const socket = new WebSocket(
             `${import.meta.env.VITE_WS_URL}/ws/playlist/${code}/${access}/`
@@ -74,18 +76,13 @@ function Playlist() {
             const data = JSON.parse(event.data);
             if (data.event === "playlist_songs") {
                 setSongs([...data.songs]);
-                setNumOfSongs(numOfSongs+1)
-            } else if (data.event === "next") {
+                setNumOfSongs(numOfSongs + 1);
+            } else if (data.event === "next" || data.event === "previous") {
                 setVideoId(data.song_id);
                 setSongProgess(0);
                 if (playerRef.current) {
                     playerRef.current.playVideo();
-                }
-            } else if (data.event === "previous") {
-                setVideoId(data.song_id);
-                setSongProgess(0);
-                if (playerRef.current) {
-                    playerRef.current.playVideo();
+                    playerRef.current.seekTo(0);
                 }
             } else if (data.event === "sync") {
                 const newValue = data.timestamp;
@@ -182,6 +179,7 @@ function Playlist() {
                 event: "playlist_sync",
                 timestamp: newValue,
                 code: localStorage.getItem("playlist_code"),
+                song_id: videoId,
             })
         );
     };
@@ -205,12 +203,11 @@ function Playlist() {
 
     const handlePlayerStateChange = (event) => {
         const status = event.data;
-        console.log('Player State Changed: ' + status);
-
         if (status === 0) {
             handleNextSong();
-        } if (status === 5) {
-            playerRef.current.playVideo()
+        }
+        if (status === 5) {
+            playerRef.current.playVideo();
         }
     };
 
@@ -218,7 +215,7 @@ function Playlist() {
         <div id="playlist-root">
             <div id="playlist-top">
                 <SimpleBar style={{ maxHeight: "100%" }}>
-                    <h1 id="playlist-title">Playlist Name</h1>
+                    <h1 id="playlist-title">{playlistName}</h1>
                     <div id="playlist-description">Creator: {hostUsername}</div>
                     <div id="playlist-description">{numOfSongs} songs</div>
                     <div id="playlist-song-table">
@@ -295,7 +292,11 @@ function Playlist() {
                                 <PlayArrowIcon />
                             </IconButton>
                         )}
-                        <IconButton color="primary" onClick={handleNextSong} disabled={host === false}>
+                        <IconButton
+                            color="primary"
+                            onClick={handleNextSong}
+                            disabled={host === false}
+                        >
                             <SkipNextIcon />
                         </IconButton>
                     </div>
