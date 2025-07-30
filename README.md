@@ -1,6 +1,6 @@
-# 🎵 Project Mixer 🎵
+# 🎵 Playlist Mixer 🎵
 
-Project Mixer is a collaborative real-time music playlist web app that allows users to create or join shared playlists, suggest songs from YouTube, vote on which songs should be played next, and listen together in perfect sync.
+Playlist Mixer is a collaborative real-time music playlist web app that allows users to create or join shared playlists, suggest songs, vote on which songs should be added to the playlist(hence the name 'Playlist Mixer'), and listen together in perfect sync.
 
 Built using React and Django, with WebSockets and Redis to support real-time features.
 
