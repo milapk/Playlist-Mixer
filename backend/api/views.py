@@ -62,6 +62,8 @@ class SuggestSong(APIView):
         if response['status'] == '200':
             song_id = response['videoId']
             duration = response['duration']
+            song_name = response['song_name']
+            artist_name = response['artist_name']
         else:
             return Response({'error': response['error']}, status=status.HTTP_404_NOT_FOUND)
         
@@ -74,6 +76,8 @@ class SuggestSong(APIView):
         
         request.data['song_duration'] = duration
         request.data['song_id'] = song_id
+        request.data['song_name'] = song_name
+        request.data['song_artist'] = artist_name
         serializer = SongSerializer(data=request.data, context={'playlist': playlist})
         if serializer.is_valid():
             song = serializer.save()
