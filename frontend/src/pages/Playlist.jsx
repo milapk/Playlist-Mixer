@@ -4,6 +4,7 @@ import SkipNextIcon from "@mui/icons-material/SkipNext";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 import PauseIcon from "@mui/icons-material/Pause";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import SyncIcon from "@mui/icons-material/Sync";
 import { Button, IconButton, Slider } from "@mui/material";
 import YouTube from "react-youtube";
 import { useNavigate } from "react-router-dom";
@@ -13,21 +14,24 @@ import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
 
 function Playlist() {
-    const [songProgress, setSongProgess] = useState(0);
-    const [videoId, setVideoId] = useState("");
-    const [songDuration, setSongDuration] = useState(100);
-    const [playstate, setPlayState] = useState("PLAY");
-    const [playlistName, setPlaylistName] = useState("");
     const [songs, setSongs] = useState([]);
+    const [songProgress, setSongProgess] = useState(0);
+    const [songDuration, setSongDuration] = useState(100);
+    const [videoId, setVideoId] = useState("");
+    const [playstate, setPlayState] = useState("PAUSED");
     const [host, setHost] = useState(false);
     const [hostUsername, setHostUsername] = useState("");
+    const [playlistName, setPlaylistName] = useState("");
     const [numOfSongs, setNumOfSongs] = useState(0);
-    const navigate = useNavigate();
     const socketRef = useRef(null);
     const playerRef = useRef(null);
+    const videoIdRef = useRef(videoId);
+    const songProgressRef = useRef(songProgress);
+    const hostRef = useRef(host);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        const getSongs = async () => {
+        const initialize = async () => {
             try {
                 const response = await api.get("/api/get-playlist-songs/", {
                     params: {
@@ -44,10 +48,12 @@ function Playlist() {
                     }
                     if (response.data.host === "True") {
                         setHost(true);
+                        hostRef.current = true;
                     } else {
                         setHost(false);
+                        hostRef.current = false;
                     }
-                    setPlaylistName(response.data.playlist_name)
+                    setPlaylistName(response.data.playlist_name);
                     setHostUsername(response.data.username);
                 } else {
                     setSongs([]);
@@ -58,57 +64,80 @@ function Playlist() {
             } catch (error) {
                 setSongs([]);
             }
-        };
-        getSongs();
 
-        const code = localStorage.getItem("playlist_code");
-        const access = localStorage.getItem(ACCESS_TOKEN);
-        const socket = new WebSocket(
-            `${import.meta.env.VITE_WS_URL}/ws/playlist/${code}/${access}/`
-        );
-        socketRef.current = socket;
+            const code = localStorage.getItem("playlist_code");
+            const access = localStorage.getItem(ACCESS_TOKEN);
+            const socket = new WebSocket(
+                `${import.meta.env.VITE_WS_URL}/ws/playlist/${code}/${access}/`
+            );
+            socketRef.current = socket;
 
-        socket.onopen = () => {
-            console.log("WebSocket connected");
+            socket.onopen = () => {
+                console.log("WebSocket connected");
+                if (hostRef.current === false) {
+                    console.log(hostRef.current);
+                    socketRef.current.send(
+                        JSON.stringify({
+                            event: "playlist_sync_request",
+                        })
+                    );
+                }
+            };
+
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.event === "playlist_songs") {
+                    setSongs([...data.songs]);
+                    setNumOfSongs(numOfSongs + 1);
+                } else if (data.event === "next" || data.event === "previous") {
+                    setVideoId(data.song_id);
+                    setSongProgess(0);
+                    if (playerRef.current) {
+                        playerRef.current.playVideo();
+                        playerRef.current.seekTo(0);
+                    }
+                } else if (data.event === "sync") {
+                    const newValue = data.timestamp;
+                    if (videoId !== data.song_id) {
+                        setVideoId(data.song_id);
+                    }
+                    setSongProgess(newValue);
+                    setPlayState('PLAY')
+                    if (playerRef.current) {
+                        playerRef.current.seekTo(newValue, true);
+                        playerRef.current.playVideo();
+                    }
+                } else if (data.event === "pause") {
+                    if (playerRef.current) {
+                        playerRef.current.pauseVideo();
+                    }
+                    setPlayState("PAUSE");
+                } else if (data.event === "play") {
+                    if (playerRef.current) {
+                        playerRef.current.playVideo();
+                    }
+                    setPlayState("PLAY");
+                } else if (data.event == "sync_request") {
+                    socketRef.current.send(
+                        JSON.stringify({
+                            event: "playlist_sync_user",
+                            song_id: videoIdRef.current,
+                            timestamp: songProgressRef.current,
+                            request_from: data.request_from,
+                        })
+                    );
+                }
+            };
+
+            socket.onclose = () => {
+                console.log("WebSocket disconnected");
+            };
         };
 
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.event === "playlist_songs") {
-                setSongs([...data.songs]);
-                setNumOfSongs(numOfSongs + 1);
-            } else if (data.event === "next" || data.event === "previous") {
-                setVideoId(data.song_id);
-                setSongProgess(0);
-                if (playerRef.current) {
-                    playerRef.current.playVideo();
-                    playerRef.current.seekTo(0);
-                }
-            } else if (data.event === "sync") {
-                const newValue = data.timestamp;
-                setSongProgess(newValue);
-                if (playerRef.current) {
-                    playerRef.current.seekTo(newValue, true);
-                }
-            } else if (data.event === "pause") {
-                if (playerRef.current) {
-                    playerRef.current.pauseVideo();
-                }
-                setPlayState("PAUSE");
-            } else if (data.event === "play") {
-                if (playerRef.current) {
-                    playerRef.current.playVideo();
-                }
-                setPlayState("PLAY");
-            }
-        };
-
-        socket.onclose = () => {
-            console.log("WebSocket disconnected");
-        };
+        initialize();
 
         return () => {
-            socket.close();
+            socketRef.current.close();
         };
     }, []);
 
@@ -130,12 +159,18 @@ function Playlist() {
     }, [playstate, videoId]);
 
     useEffect(() => {
+        videoIdRef.current = videoId;
         if (playerRef.current) {
             setSongDuration(playerRef.current.getDuration());
         }
     }, [videoId]);
 
+    useEffect(() => {
+        songProgressRef.current = songProgress;
+    }, [songProgress]);
+
     const handleNextSong = () => {
+        setPlayState("PLAY");
         socketRef.current.send(
             JSON.stringify({
                 event: "playlist_next_song",
@@ -164,13 +199,17 @@ function Playlist() {
     };
 
     const handlePlaySong = () => {
-        socketRef.current.send(
-            JSON.stringify({
-                event: "playlist_play",
-                timestamp: songProgress,
-                code: localStorage.getItem("playlist_code"),
-            })
-        );
+        if (videoId === "") {
+            handleNextSong();
+        } else {
+            socketRef.current.send(
+                JSON.stringify({
+                    event: "playlist_play",
+                    timestamp: songProgress,
+                    code: localStorage.getItem("playlist_code"),
+                })
+            );
+        }
     };
 
     const handleSongDurationChange = (e, newValue) => {
@@ -182,6 +221,18 @@ function Playlist() {
                 song_id: videoId,
             })
         );
+    };
+
+    const handleSync = () => {
+        if (host === true) {
+            //pass
+        } else {
+            socketRef.current.send(
+                JSON.stringify({
+                    event: "playlist_sync_request",
+                })
+            );
+        }
     };
 
     const handleSongSuggest = () => {
@@ -207,6 +258,7 @@ function Playlist() {
             handleNextSong();
         }
         if (status === 5) {
+            playerRef.current.seekTo(songProgress, true);
             playerRef.current.playVideo();
         }
     };
@@ -268,6 +320,9 @@ function Playlist() {
                 </div>
                 <div id="playlist-controller">
                     <div id="playlist-controller-buttons">
+                        <IconButton color="primary" onClick={handleSync}>
+                            <SyncIcon />
+                        </IconButton>
                         <IconButton
                             color="primary"
                             onClick={handlePreviousSong}
