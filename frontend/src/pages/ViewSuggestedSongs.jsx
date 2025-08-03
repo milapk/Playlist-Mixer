@@ -11,34 +11,42 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import "../styles/ViewSuggestedSongs.css";
+import AutoCloseAlert from "../components/AutoCloseAlert";
 
 function ViewSuggestSongs() {
     const [suggestedSongs, setSuggestedSongs] = useState([]);
+    const [votesNeeded, setVotesNeeded] = useState(null);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("error");
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const getSuggestedSongs = async () => {
-            try {
-                const response = await api.get("/api/get-suggested-songs/", {
-                    params: {
-                        playlist_code: localStorage.getItem("playlist_code"),
-                    },
-                });
-                if (response.status === 200) {
-                    const data = response.data.songs;
-                    if (Array.isArray(data) && data.length > 0) {
-                        setSuggestedSongs([...data]);
-                    } else {
-                        setSuggestedSongs([]);
-                    }
+    const getSuggestedSongs = async () => {
+        try {
+            const response = await api.get("/api/get-suggested-songs/", {
+                params: {
+                    playlist_code: localStorage.getItem("playlist_code"),
+                },
+            });
+            if (response.status === 200) {
+                const data = response.data;
+                if (Array.isArray(data.songs) && data.songs.length > 0) {
+                    setSuggestedSongs([...data.songs]);
+                    setVotesNeeded(data.votes_to_add_song);
                 } else {
                     setSuggestedSongs([]);
+                    setVotesNeeded(null);
                 }
-            } catch (error) {
-                console.error("Error fetching suggested songs:", error);
-                setSuggestedSongs([]);
             }
-        };
+        } catch (error) {
+            setAlertType("error");
+            setAlertMessage(
+                "An error occurred when getting suggested songs. Please refresh or try again later!"
+            );
+            setSuggestedSongs([]);
+        }
+    };
+
+    useEffect(() => {
         getSuggestedSongs();
     }, []);
 
@@ -50,9 +58,20 @@ function ViewSuggestSongs() {
             });
             if (response.status === 200) {
                 console.log(response.data.message);
+                getSuggestedSongs();
+                setAlertType("success");
+                setAlertMessage("Voted for song successfully!");
             }
         } catch (error) {
-            console.error("error", error);
+            setAlertType("error");
+            if (error.response && error.response.status === 401) {
+                setAlertMessage("You have already voted for this song!");
+                getSuggestedSongs();
+            } else {
+                setAlertMessage(
+                    "An error occurred when getting suggested songs. Please refresh or try again later!"
+                );
+            }
         }
     };
 
@@ -62,21 +81,28 @@ function ViewSuggestSongs() {
 
     return (
         <Box className="suggested-songs-container">
-            <Typography variant="h4" className="page-title">
-                Suggested Songs
-            </Typography>
+            <AutoCloseAlert
+                message={alertMessage}
+                severity={alertType}
+                duration={3000}
+                onClose={() => setAlertMessage("")}
+            />
+            <div id="title">View Suggested Songs</div>
             <Grid container spacing={2}>
                 {suggestedSongs.length > 0 ? (
                     suggestedSongs.map((song, index) => (
                         <Grid item xs={12} sm={6} md={4} key={index}>
                             <Card className="song-card">
                                 <CardContent>
-                                    <Typography
-                                        variant="h6"
-                                        className="song-name"
-                                    >
-                                        {song.song_name}
-                                    </Typography>
+                                    <div id="song-name">
+                                        <Typography
+                                            variant="h6"
+                                            className="song-name"
+                                        >
+                                            {song.song_name}
+                                        </Typography>
+                                    </div>
+
                                     <Typography
                                         variant="subtitle1"
                                         className="song-artist"
@@ -89,14 +115,24 @@ function ViewSuggestSongs() {
                                     >
                                         Duration: {song.song_duration} seconds
                                     </Typography>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        className="vote-button"
-                                        onClick={() => handleVote(song.song_id)}
+                                    <Typography
+                                        variant="body2"
+                                        className="song-votes"
                                     >
-                                        Vote
-                                    </Button>
+                                        Votes: {song.votes} / {votesNeeded}
+                                    </Typography>
+                                    <div id="vote-button">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            className="vote-button"
+                                            onClick={() =>
+                                                handleVote(song.song_id)
+                                            }
+                                        >
+                                            Vote
+                                        </Button>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </Grid>

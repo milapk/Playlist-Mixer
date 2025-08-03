@@ -12,6 +12,7 @@ import SimpleBar from "simplebar-react";
 import "simplebar-react/dist/simplebar.min.css";
 import api from "../api";
 import { ACCESS_TOKEN } from "../constants";
+import AutoCloseAlert from "../components/AutoCloseAlert";
 
 function Playlist() {
     const [songs, setSongs] = useState([]);
@@ -23,6 +24,8 @@ function Playlist() {
     const [hostUsername, setHostUsername] = useState("");
     const [playlistName, setPlaylistName] = useState("");
     const [numOfSongs, setNumOfSongs] = useState(0);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertType, setAlertType] = useState("error");
     const socketRef = useRef(null);
     const playerRef = useRef(null);
     const videoIdRef = useRef(videoId);
@@ -45,6 +48,8 @@ function Playlist() {
                     } else {
                         setNumOfSongs(0);
                         setSongs([]);
+                        setAlertType("info");
+                        setAlertMessage("This playlist is currently empty!");
                     }
                     if (response.data.host === "True") {
                         setHost(true);
@@ -55,14 +60,18 @@ function Playlist() {
                     }
                     setPlaylistName(response.data.playlist_name);
                     setHostUsername(response.data.username);
-                } else {
-                    setSongs([]);
-                    setNumOfSongs(0);
-                    setHostUsername(" ");
-                    setPlaylistName(" ");
                 }
             } catch (error) {
                 setSongs([]);
+                setNumOfSongs(0);
+                setHostUsername(" ");
+                setPlaylistName(" ");
+                setAlertType("error");
+                if (error.response) {
+                    setAlertMessage(
+                        "An error occurred when getting suggested songs. Please refresh or try again later!"
+                    );
+                }
             }
 
             const code = localStorage.getItem("playlist_code");
@@ -89,6 +98,8 @@ function Playlist() {
                 if (data.event === "playlist_songs") {
                     setSongs([...data.songs]);
                     setNumOfSongs(numOfSongs + 1);
+                    setAlertType("info");
+                    setAlertMessage("New song has been added to the playlist!");
                 } else if (data.event === "next" || data.event === "previous") {
                     setVideoId(data.song_id);
                     setSongProgess(0);
@@ -102,7 +113,7 @@ function Playlist() {
                         setVideoId(data.song_id);
                     }
                     setSongProgess(newValue);
-                    setPlayState('PLAY')
+                    setPlayState("PLAY");
                     if (playerRef.current) {
                         playerRef.current.seekTo(newValue, true);
                         playerRef.current.playVideo();
@@ -265,6 +276,12 @@ function Playlist() {
 
     return (
         <div id="playlist-root">
+            <AutoCloseAlert
+                message={alertMessage}
+                severity={alertType}
+                duration={3000}
+                onClose={() => setAlertMessage("")}
+            />
             <div id="playlist-top">
                 <SimpleBar style={{ maxHeight: "100%" }}>
                     <h1 id="playlist-title">{playlistName}</h1>

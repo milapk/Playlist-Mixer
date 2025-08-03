@@ -1,15 +1,18 @@
 import React, { captureOwnerStack, useState } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Alert from "@mui/material/Alert";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import "../styles/UserForm.css";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import AutoCloseAlert from "./AutoCloseAlert";
 
 function UserForm({ type }) {
     const title = type === "LOGIN" ? "Login" : "Register";
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [alertMessage, setAlertMessage] = useState("");
     const navigate = useNavigate();
 
     const usernameChange = (e) => {
@@ -20,21 +23,33 @@ function UserForm({ type }) {
     };
 
     const login = async () => {
-        const response = await api.post("/api/token/", {
-            username,
-            password,
-        });
-        if (response.status === 200) {
-            localStorage.setItem(ACCESS_TOKEN, response.data.access);
-            localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
-            navigate("/");
-        } else {
-            console.log(response.data.detail);
+        try {
+            const response = await api.post("/api/token/", {
+                username,
+                password,
+            });
+            if (response.status === 200) {
+                localStorage.setItem(ACCESS_TOKEN, response.data.access);
+                localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
+                navigate("/");
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                setAlertMessage(
+                    "Invalid Username or Password, please try again!"
+                );
+            } else {
+                setAlertMessage("An error occurred. Please try again later.");
+            }
         }
     };
 
     const handleSubmit = async (e) => {
         try {
+            if (username === "" || password === "") {
+                setAlertMessage("Username or Password cannot be empty!");
+                return;
+            }
             if (type === "LOGIN") {
                 login();
             } else if (type === "REGISTER") {
@@ -49,10 +64,15 @@ function UserForm({ type }) {
                 }
             }
         } catch (error) {
-            console.log(error);
+            if (error.response && error.response.data.username) {
+                setAlertMessage(
+                    "Username is already taken, please enter another one."
+                );
+            } else {
+                setAlertMessage("An error occurred. Please try again later.");
+            }
         }
     };
-
 
     const handlePageSwitch = () => {
         if (type === "LOGIN") {
@@ -64,6 +84,12 @@ function UserForm({ type }) {
 
     return (
         <div id="user-form-root">
+            <AutoCloseAlert
+                message={alertMessage}
+                severity="error"
+                duration={3000}
+                onClose={() => setAlertMessage("")}
+            />
             <div id="user-form-box">
                 <div id="title">{title}</div>
                 <div id="text-field-">
@@ -73,7 +99,6 @@ function UserForm({ type }) {
                         variant="filled"
                         size="small"
                         onChange={usernameChange}
-                        
                     />
                 </div>
                 <div id="text-field-">
@@ -83,7 +108,6 @@ function UserForm({ type }) {
                         variant="filled"
                         size="small"
                         onChange={passwordChange}
-                        
                     />
                 </div>
 

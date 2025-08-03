@@ -131,7 +131,7 @@ class GetSuggestedSongs(APIView):
         unvoted_songs = SongModel.objects.filter(playlist=playlist, voted_in_playlist=False).exclude(song_id__in=voted_ids)
         if unvoted_songs.exists():
             serializer = SongSerializer(unvoted_songs, many=True)
-            return Response({'songs': serializer.data}, status=status.HTTP_200_OK)
+            return Response({'songs': serializer.data, 'votes_to_add_song': playlist.votes_to_add_song}, status=status.HTTP_200_OK)
         return Response({'songs': {}}, status=status.HTTP_200_OK)
 
 class GetSongsInPlaylist(APIView):
